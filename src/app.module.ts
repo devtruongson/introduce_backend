@@ -1,10 +1,13 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
-import { UserModule } from './user/user.module';
 import { JwtModule } from '@nestjs/jwt';
+
+import { UserModule } from './user/user.module';
 import { SeoModule } from './seo/seo.module';
 import { HeaderModule } from './header/header.module';
+import { MessagerModule } from './messager/messager.module';
+import { CateModule } from './cate/cate.module';
 
 @Module({
     imports: [
@@ -18,6 +21,8 @@ import { HeaderModule } from './header/header.module';
         UserModule,
         SeoModule,
         HeaderModule,
+        MessagerModule,
+        CateModule,
     ],
     controllers: [],
     providers: [],
