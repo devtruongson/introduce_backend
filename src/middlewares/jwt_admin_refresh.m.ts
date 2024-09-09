@@ -5,36 +5,41 @@ import { UserService } from 'src/user/user.service';
 import { IJwtPayload } from 'src/utils/jwt.dt';
 
 @Injectable()
-export class JwtMiddleware implements NestMiddleware {
+export class JwtMiddlewareRefresh implements NestMiddleware {
     constructor(
         private readonly jwtService: JwtService,
         @Inject(UserService) private readonly userService: UserService,
     ) {}
 
     async use(req: Request, res: Response, next: NextFunction) {
-        const authHeader = req.headers.authorization;
-        if (authHeader && authHeader.startsWith('Bearer ')) {
-            const access_token = authHeader.split(' ')[1].trim();
+        const access_token = req.body.access_token?.trim();
+        const refresh_token = req.body.refresh_token?.trim();
+        const _id = req.body._id?.trim();
 
-            if (!access_token) {
-                throw new HttpException(
-                    'Access_Token is a required parameter | Access_Token là tham số bắt buộc!',
-                    HttpStatus.UNAUTHORIZED,
-                );
-            }
-
+        if (access_token && refresh_token) {
             try {
                 // Verify the token
-                const checkAccessToken: IJwtPayload = await this.jwtService.verifyAsync(access_token);
+                const [checkAccessToken, checkRefreshToken]: IJwtPayload[] = await Promise.all([
+                    await this.jwtService.verifyAsync(access_token, {
+                        ignoreExpiration: true,
+                    }),
+                    await this.jwtService.verifyAsync(refresh_token),
+                ]);
+
+                if (checkAccessToken._id !== checkRefreshToken._id) {
+                    throw new Error('Access TOken & Refresh Token Không hợp lệ chúng không phải của một user!');
+                }
+
                 req.body.user_payload = checkAccessToken;
                 req.body.access_token = access_token;
+                req.body.refresh_token = access_token;
 
                 if (!checkAccessToken.is_admin) {
                     throw new Error('Tài khoản của bạn không đủ quền truy cập!');
                 }
 
                 // Check if the token is valid in the database
-                const isValidDB = await this.userService.getUserByAccessToken(access_token, checkAccessToken._id);
+                const isValidDB = await this.userService.getUserByAccessToken(access_token, _id);
                 if (isValidDB && isValidDB.is_admin) {
                     next();
                 } else {

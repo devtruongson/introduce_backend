@@ -1,12 +1,13 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { registerDTO } from './dto/register.dt';
 import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
 import { User, UserDocument } from 'src/schemas/user.schema';
 import { Model } from 'mongoose';
 import { comparePassword, hashPassword } from './helpers/bcrypt';
-import { IJwtPayload } from 'src/utils/jwt.dt';
+import { IJwtPayload, IRefreshToken } from 'src/utils/jwt.dt';
 import { loginDTO } from './dto/login.dt';
+import { updateAdminDto } from './dto/update.dt';
 
 @Injectable()
 export class UserService {
@@ -112,6 +113,96 @@ export class UserService {
         return {
             msg: 'Logout Thành Công!',
         };
+    }
+
+    async refreshToken(data: IRefreshToken) {
+        try {
+            const user: IJwtPayload = {
+                _id: data.user_payload._id,
+                is_admin: data.user_payload.is_admin,
+                email: data.user_payload.email,
+                is_blocked: data.user_payload.is_blocked,
+            };
+
+            const tokens = await this.generateToken({
+                _id: '' + user._id,
+                email: user.email,
+                is_admin: user.is_admin,
+                is_blocked: user.is_blocked,
+            });
+
+            await Promise.all([
+                this.userModel.findOneAndUpdate(
+                    {
+                        _id: user._id,
+                    },
+                    {
+                        $push: {
+                            tokens: {
+                                access_token: tokens.access_token,
+                                refresh_token: tokens.refresh_token,
+                            },
+                        },
+                    },
+                ),
+                this.userModel.findOneAndUpdate(
+                    {
+                        _id: user._id,
+                    },
+                    {
+                        $pull: {
+                            tokens: {
+                                access_token: data.access_token,
+                            },
+                        },
+                    },
+                ),
+            ]);
+
+            return {
+                ...tokens,
+            };
+        } catch (error) {
+            console.log(error);
+            throw new BadRequestException(`Có lỗi xảy ra: ${error}`);
+        }
+    }
+
+    async getUserByEmail(email: string) {
+        const user = await this.userModel
+            .findOne({
+                email: email.trim(),
+            })
+            .select(['-password', '-tokens']);
+
+        if (!user) {
+            throw new NotFoundException('Tài khoản không tồn tại trong hệ thống!');
+        }
+        return user;
+    }
+
+    async updateAdmin(data: updateAdminDto) {
+        try {
+            const user = await this.userModel
+                .findByIdAndUpdate(
+                    data.user_payload._id,
+                    {
+                        full_name: data.full_name,
+                        content: data.content,
+                        description: data.description,
+                        avatar_url: data.avatar_url,
+                        socials: data.socials,
+                    },
+                    {
+                        new: true,
+                    },
+                )
+                .select(['-password', '-tokens']);
+
+            return user;
+        } catch (error) {
+            throw new HttpException(error.message ? error.message : 'Có lỗi xảy ra', HttpStatus.BAD_REQUEST);
+        }
     }
 
     async getUserByAccessToken(access_token: string, _id: string) {

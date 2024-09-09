@@ -1,9 +1,10 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { createSeoDTO } from './dto/create.dt';
 import { Seo, SeoDocument } from 'src/schemas/seo.schema';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { UserService } from 'src/user/user.service';
+import { updateSeoDTO } from './dto/update.dt';
 
 @Injectable()
 export class SeoService {
@@ -33,6 +34,24 @@ export class SeoService {
             return seo;
         } catch (error) {
             throw new BadRequestException(`Có lỗi xảy ra ${error}`);
+        }
+    }
+
+    async update(data: updateSeoDTO) {
+        try {
+            const seo = await this.seoModel.findByIdAndUpdate(
+                data._id,
+                {
+                    ...data,
+                },
+                {
+                    new: true,
+                },
+            );
+
+            return seo;
+        } catch (error) {
+            throw new HttpException(error.message ? error.message : 'Có lỗi xảy ra', HttpStatus.BAD_REQUEST);
         }
     }
 

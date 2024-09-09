@@ -4,7 +4,6 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { UserModule } from './user/user.module';
 import { JwtModule } from '@nestjs/jwt';
 import { SeoModule } from './seo/seo.module';
-import { UserService } from './user/user.service';
 
 @Module({
     imports: [

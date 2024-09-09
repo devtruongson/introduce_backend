@@ -24,9 +24,15 @@ import { JwtMiddleware } from 'src/middlewares/jwt_admin_access.m';
 })
 export class SeoModule implements NestModule {
     configure(consumer: MiddlewareConsumer) {
-        consumer.apply(JwtMiddleware).forRoutes({
-            path: '/seo',
-            method: RequestMethod.POST,
-        });
+        consumer.apply(JwtMiddleware).forRoutes(
+            {
+                path: '/seo',
+                method: RequestMethod.POST,
+            },
+            {
+                path: '/seo',
+                method: RequestMethod.PUT,
+            },
+        );
     }
 }

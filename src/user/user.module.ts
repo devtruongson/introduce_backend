@@ -3,8 +3,8 @@ import { UserService } from './user.service';
 import { UserController } from './user.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { User, UserSchema } from 'src/schemas/user.schema';
+import { JwtMiddlewareRefresh } from 'src/middlewares/jwt_admin_refresh.m';
 import { JwtMiddleware } from 'src/middlewares/jwt_admin_access.m';
-import { JwtService } from '@nestjs/jwt';
 
 @Module({
     imports: [
@@ -24,9 +24,16 @@ import { JwtService } from '@nestjs/jwt';
 })
 export class UserModule implements NestModule {
     configure(consumer: MiddlewareConsumer) {
-        consumer.apply(JwtMiddleware).forRoutes({
-            path: '/user/refresh-token',
-            method: RequestMethod.GET,
-        });
+        consumer
+            .apply(JwtMiddlewareRefresh)
+            .forRoutes({
+                path: '/user/refresh-token',
+                method: RequestMethod.POST,
+            })
+            .apply(JwtMiddleware)
+            .forRoutes({
+                path: '/user',
+                method: RequestMethod.PUT,
+            });
     }
 }
