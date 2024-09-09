@@ -1,32 +1,32 @@
 import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common';
-import { UserService } from './user.service';
-import { UserController } from './user.controller';
+import { SeoService } from './seo.service';
+import { SeoController } from './seo.controller';
 import { MongooseModule } from '@nestjs/mongoose';
-import { User, UserSchema } from 'src/schemas/user.schema';
+import { Seo, SeoSchema } from 'src/schemas/seo.schema';
+import { UserModule } from 'src/user/user.module';
 import { JwtMiddleware } from 'src/middlewares/jwt_admin_access.m';
-import { JwtService } from '@nestjs/jwt';
 
 @Module({
     imports: [
         MongooseModule.forFeatureAsync([
             {
-                name: User.name,
+                name: Seo.name,
                 useFactory: () => {
-                    const schema = UserSchema;
+                    const schema = SeoSchema;
                     return schema;
                 },
             },
         ]),
+        UserModule,
     ],
-    controllers: [UserController],
-    providers: [UserService],
-    exports: [UserService],
+    controllers: [SeoController],
+    providers: [SeoService],
 })
-export class UserModule implements NestModule {
+export class SeoModule implements NestModule {
     configure(consumer: MiddlewareConsumer) {
         consumer.apply(JwtMiddleware).forRoutes({
-            path: '/user/refresh-token',
-            method: RequestMethod.GET,
+            path: '/seo',
+            method: RequestMethod.POST,
         });
     }
 }

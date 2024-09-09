@@ -41,6 +41,15 @@ export class User {
     })
     is_admin: boolean;
 
+    @Prop()
+    content: string;
+
+    @Prop()
+    description: string;
+
+    @Prop()
+    avatar_url: string;
+
     @Prop({
         default: false,
     })

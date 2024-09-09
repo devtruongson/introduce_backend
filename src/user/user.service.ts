@@ -93,6 +93,34 @@ export class UserService {
         }
     }
 
+    async logout(access_token: string, _id: string) {
+        if (_id && access_token) {
+            await this.userModel.findByIdAndUpdate(
+                {
+                    _id: _id,
+                },
+                {
+                    $pull: {
+                        tokens: {
+                            access_token: access_token,
+                        },
+                    },
+                },
+            );
+        }
+
+        return {
+            msg: 'Logout Thành Công!',
+        };
+    }
+
+    async getUserByAccessToken(access_token: string, _id: string) {
+        return await this.userModel.findOne({
+            _id: _id,
+            'tokens.access_token': { $in: [access_token] },
+        });
+    }
+
     async generateToken(payload: IJwtPayload) {
         const dataPayload: IJwtPayload = {
             _id: payload._id,

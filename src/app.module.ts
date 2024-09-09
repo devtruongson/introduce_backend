@@ -3,6 +3,8 @@ import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { UserModule } from './user/user.module';
 import { JwtModule } from '@nestjs/jwt';
+import { SeoModule } from './seo/seo.module';
+import { UserService } from './user/user.service';
 
 @Module({
     imports: [
@@ -14,6 +16,7 @@ import { JwtModule } from '@nestjs/jwt';
             signOptions: { expiresIn: '60s' },
         }),
         UserModule,
+        SeoModule,
     ],
     controllers: [],
     providers: [],

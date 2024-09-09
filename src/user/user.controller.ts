@@ -1,6 +1,6 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Post, Req } from '@nestjs/common';
 import { UserService } from './user.service';
-import { Request, Response } from 'express';
+import { Request } from 'express';
 import { registerDTO } from './dto/register.dt';
 import { loginDTO } from './dto/login.dt';
 
@@ -16,5 +16,14 @@ export class UserController {
     @Post('login')
     loginAdmin(@Body() data: loginDTO) {
         return this.userService.login(data);
+    }
+
+    @Post('logout')
+    logout(@Body() data: { _id: string }, @Req() req: Request) {
+        const access_token = req.headers?.authorization?.split(' ')?.length
+            ? req.headers?.authorization?.split(' ')[1]
+            : '';
+
+        return this.userService.logout(access_token, data._id);
     }
 }
