@@ -1,85 +1,196 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
-
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
-
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
-
-## Description
-
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
-
-## Project setup
-
-```bash
-$ npm install
+```javascript
+return await this.headerModel.aggregate([
+    {
+        $match: {
+            is_active: true,
+            'submenu.is_active': true,
+        },
+    },
+    {
+        $addFields: {
+            submenu: {
+                $filter: {
+                    input: '$submenu',
+                    as: 'item',
+                    cond: { $eq: ['$$item.is_active', true] },
+                },
+            },
+        },
+    },
+    {
+        $sort: { position: 1 },
+    },
+]);
 ```
 
-## Compile and run the project
+addFields: Thêm 1 trường https://www.mongodb.com/docs/manual/reference/operator/aggregation/addFields/
 
-```bash
-# development
-$ npm run start
+Giải Thích Cụ Thể
+Đoạn mã bạn cung cấp sử dụng $addFields và $filter trong aggregation pipeline để lọc các mục trong mảng submenu. Đây là từng phần của mã và cách nó hoạt động:
 
-# watch mode
-$ npm run start:dev
+1. $addFields
+   Mục Đích: $addFields được sử dụng để thêm hoặc cập nhật các trường trong tài liệu kết quả của aggregation pipeline. Trong trường hợp này, nó dùng để cập nhật trường submenu trong tài liệu.
+   Cú Pháp:
+   javascript
+   Copy code
+   {
+   $addFields: {
+   <field>: <expression>
+   }
+   }
+   Ở đây, <field> là tên trường bạn muốn thêm hoặc cập nhật, và <expression> là biểu thức tính toán giá trị của trường đó.
+2. submenu
+   Mục Đích: Trong trường hợp này, chúng ta cập nhật trường submenu của tài liệu.
+   Cú Pháp:
+   javascript
+   Copy code
+   submenu: {
+   $filter: {
+    input: '$submenu',
+   as: 'item',
+   cond: { $eq: ['$$item.is_active', true] }
+   }
+   }
+   Ở đây, submenu được thiết lập lại với một giá trị mới được tính toán từ $filter.
+3. $filter
+   Mục Đích: $filter là toán tử trong MongoDB dùng để lọc các phần tử của một mảng dựa trên điều kiện cung cấp.
 
-# production mode
-$ npm run start:prod
-```
+Cú Pháp:
 
-## Run tests
+javascript
+Copy code
+{
+$filter: {
+    input: <arrayField>,
+    as: <variableName>,
+    cond: <condition>
+  }
+}
+input: Trường đầu vào mà bạn muốn lọc, ở đây là '$submenu' (trường submenu trong tài liệu).
+as: Tên biến mà bạn muốn sử dụng để đại diện cho từng phần tử trong mảng trong biểu thức điều kiện. Ở đây, item là tên biến.
+cond: Điều kiện lọc cho mỗi phần tử trong mảng. Đây là điều kiện mà các phần tử cần thỏa mãn để được đưa vào kết quả cuối cùng.
+Cú Pháp Cụ Thể:
 
-```bash
-# unit tests
-$ npm run test
+javascript
+Copy code
+submenu: {
+$filter: {
+    input: '$submenu', // Mảng cần lọc
+as: 'item', // Tên biến đại diện cho mỗi phần tử trong mảng
+cond: { $eq: ['$$item.is_active', true] } // Điều kiện lọc
+  }
+}
+input: '$submenu': Đặt giá trị của trường submenu làm đầu vào cho $filter.
+as: 'item': Đại diện cho từng phần tử trong mảng submenu bằng biến item.
+cond: { $eq: ['$$item.is_active', true] }: Điều kiện để phần tử được giữ lại là item.is_active phải bằng true.
+Tổng Kết
+$addFields thêm hoặc cập nhật trường trong tài liệu kết quả.
+$filter lọc các phần tử của mảng dựa trên điều kiện cho trước.
+Trong trường hợp này, submenu chỉ chứa các mục mà có is_active là true, vì $filter lọc các mục không thỏa mãn điều kiện.
+Ví Dụ Thực Tế
+Giả sử bạn có tài liệu sau trong cơ sở dữ liệu:
 
-# e2e tests
-$ npm run test:e2e
+json
+Copy code
+{
+"\_id": "123",
+"title": "Sample Header",
+"submenu": [
+{ "title": "Submenu 1", "is_active": false },
+{ "title": "Submenu 2", "is_active": true },
+{ "title": "Submenu 3", "is_active": false }
+]
+}
+Sau khi áp dụng $addFields với $filter, kết quả sẽ là:
 
-# test coverage
-$ npm run test:cov
-```
+json
+Copy code
+{
+"\_id": "123",
+"title": "Sample Header",
+"submenu": [
+{ "title": "Submenu 2", "is_active": true }
+]
+}
+Hy vọng giải thích trên đã giúp bạn hiểu rõ cách hoạt động của $addFields và $filter trong aggregation pipeline của MongoDB. Nếu bạn có thêm câu hỏi hoặc cần thêm trợ giúp, đừng ngần ngại yêu cầu!
 
-## Resources
+Để hiểu rõ về $$item và cách hoạt động của nó trong $filter của MongoDB, hãy cùng phân tích kỹ lưỡng:
 
-Check out a few resources that may come in handy when working with NestJS:
+Các Thành Phần Của $filter
+$filter: $filter là một toán tử trong MongoDB aggregation pipeline dùng để lọc các phần tử của một mảng theo điều kiện nhất định.
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+Cú pháp của $filter là:
 
-## Support
+javascript
+Copy code
+{
+$filter: {
+input: <arrayField>,
+as: <variableName>,
+cond: <condition>
+}
+}
+input: Mảng đầu vào mà bạn muốn lọc.
+as: Tên biến mà bạn muốn sử dụng để đại diện cho từng phần tử của mảng trong điều kiện lọc.
+cond: Điều kiện lọc mà mỗi phần tử của mảng cần thỏa mãn để được giữ lại trong kết quả.
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+$$
+item:
 
-## Stay in touch
+$$item là biến đại diện cho từng phần tử trong mảng input mà bạn định nghĩa trong as.
+Dấu $$ trước tên biến (item trong trường hợp này) cho biết đây là một biến hệ thống, sử dụng trong biểu thức điều kiện.
+Ví Dụ Cụ Thể
+Giả sử bạn có một tài liệu như sau trong MongoDB:
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+json
+Copy code
+{
+  "_id": "123",
+  "title": "Sample Header",
+  "submenu": [
+    { "title": "Submenu 1", "is_active": false },
+    { "title": "Submenu 2", "is_active": true },
+    { "title": "Submenu 3", "is_active": false }
+  ]
+}
+Bạn muốn lọc trường submenu để chỉ giữ lại các phần tử có is_active là true.
 
-## License
+Aggregation Pipeline
+javascript
+Copy code
+db.headers.aggregate([
+  {
+    $addFields: {
+      submenu: {
+        $filter: {
+          input: '$submenu', // Mảng `submenu` đầu vào
+          as: 'item', // Tên biến đại diện cho từng phần tử trong mảng
+          cond: { $eq: ['$$item.is_active', true] } // Điều kiện lọc
+        }
+      }
+    }
+  }
+])
+input: '$submenu': Đặt giá trị của trường submenu trong tài liệu làm đầu vào cho $filter.
+as: 'item': Tạo một biến tên là item đại diện cho mỗi phần tử trong mảng submenu.
+cond: { $eq: ['$$item.is_active', true] }: Điều kiện để mỗi phần tử item được giữ lại là item.is_active phải bằng true.
+Giải Thích Điều Kiện
+$$item: Đây là cú pháp của MongoDB để tham chiếu đến phần tử hiện tại trong mảng khi dùng $filter.
+$$item.is_active: Tham chiếu đến trường is_active của phần tử hiện tại (biến item) trong mảng submenu.
+Kết Quả
+Với tài liệu đầu vào trên, sau khi áp dụng aggregation pipeline, kết quả sẽ là:
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+json
+Copy code
+{
+  "_id": "123",
+  "title": "Sample Header",
+  "submenu": [
+    { "title": "Submenu 2", "is_active": true }
+  ]
+}
+Tổng Kết
+$$item là cách MongoDB tham chiếu đến mỗi phần tử của mảng trong ngữ cảnh của $filter.
+Sử dụng $$ cho phép bạn truy cập vào các thuộc tính của phần tử hiện tại trong điều kiện lọc.
+Hy vọng rằng giải thích này giúp bạn hiểu rõ hơn về cách sử dụng biến hệ thống trong MongoDB và cú pháp của $filter. Nếu bạn có thêm câu hỏi hoặc cần làm rõ thêm bất kỳ điểm nào, hãy cho tôi biết!
+$$

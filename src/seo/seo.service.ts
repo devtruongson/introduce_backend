@@ -3,7 +3,6 @@ import { createSeoDTO } from './dto/create.dt';
 import { Seo, SeoDocument } from 'src/schemas/seo.schema';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
-import { UserService } from 'src/user/user.service';
 import { updateSeoDTO } from './dto/update.dt';
 
 @Injectable()
