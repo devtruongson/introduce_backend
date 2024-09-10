@@ -33,6 +33,7 @@ export class Cate {
     @Prop({
         required: true,
         index: true,
+        unique: true,
     })
     slug: string;
 

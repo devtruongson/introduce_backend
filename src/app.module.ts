@@ -12,7 +12,7 @@ import { CateModule } from './cate/cate.module';
 @Module({
     imports: [
         ConfigModule.forRoot(),
-        MongooseModule.forRoot(process.env.URL_MONGO_DB),
+        MongooseModule.forRoot('mongodb+srv://truongsondev:Truongson2003%40@db.wze7j.mongodb.net/introduce_truong_son'),
         JwtModule.register({
             global: true,
             secret: process.env.JWT_SECRET,

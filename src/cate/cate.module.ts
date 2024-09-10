@@ -24,9 +24,19 @@ import { JwtMiddleware } from 'src/middlewares/jwt_admin_access.m';
 })
 export class CateModule implements NestModule {
     configure(consumer: MiddlewareConsumer) {
-        consumer.apply(JwtMiddleware).forRoutes({
-            path: '/cate',
-            method: RequestMethod.POST,
-        });
+        consumer.apply(JwtMiddleware).forRoutes(
+            {
+                path: '/cate',
+                method: RequestMethod.POST,
+            },
+            {
+                path: '/cate',
+                method: RequestMethod.PUT,
+            },
+            {
+                path: '/cate/:id',
+                method: RequestMethod.PATCH,
+            },
+        );
     }
 }
